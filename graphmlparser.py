@@ -78,9 +78,9 @@ def is_node_empty(node: dict) -> bool:
     :param node: dictionary structure
     :return: bool
     """
-    if not ('y:GenericNode') in node.keys():
+    if not 'y:GenericNode' in node.keys():
         return True
-    if not ('y:NodeLabel') in node['y:GenericNode'].keys():
+    if not 'y:NodeLabel' in node['y:GenericNode'].keys():
         return True
     return False
 
@@ -93,6 +93,7 @@ def is_node_group(node: dict) -> bool:
     """
     return 'y:ProxyAutoBoundsNode' in node.keys()
 
+
 def get_sub_nodes(nodes: list) -> list:
     """
     gets all sub-nodes from groupnodes (detects in node has subnodes (has "graph' key) and gets all nodes in node['graph']
@@ -100,7 +101,6 @@ def get_sub_nodes(nodes: list) -> list:
     :param nodes: list of nodes
     :return: list of nodes
     """
-
     sub = [node['graph'] for node in nodes if 'graph' in node.keys()]
     sub = flatten(sub, 'node')
     sub = flatten(sub, 'data')
@@ -120,7 +120,7 @@ def clean_node_label(label: str) -> [str]:
     events = [s.split('\n')[-1].strip() for s in events]
     return events[:-1]
 
-def get_simple_nodes_data(flattened_nodes: dict) -> [str]:
+def get_simple_nodes_data(flattened_nodes: [dict]) -> [str]:
     """
     gets labels from list of nodes and cleans them from extra data using clean_node_label function
     :param flattened_nodes: list of nodes with data
@@ -134,6 +134,19 @@ def get_simple_nodes_data(flattened_nodes: dict) -> [str]:
     node_labels = list(map(clean_node_label, node_labels))
     return [e for node in node_labels for e in node]
 
+def get_sub_groups(group_nodes: [dict]) -> [dict]:
+    """
+    this function gets sub group nodes from group nodes list
+    :param group_nodes: gropu nodes on in other
+    :return: group nodes in flat list
+    """
+    subnodes = list(filter(lambda x: 'y:Realizers' in x['y:ProxyAutoBoundsNode'].keys() and 'y:ProxyAutoBoundsNode' in x['y:ProxyAutoBoundsNode']['y:Realizers'].keys(), group_nodes))
+    temp = []
+    while subnodes:
+        temp.extend([x['y:ProxyAutoBoundsNode']['y:Realizers'] for x in subnodes])
+        subnodes = list(filter(lambda x: 'y:Realizers' in x['y:ProxyAutoBoundsNode'].keys() and 'y:ProxyAutoBoundsNode' in x['y:ProxyAutoBoundsNode']['y:Realizers'].keys(), temp))
+    return temp
+
 def get_group_nodes_data(flattened_nodes: list) -> [str]:
     """
     gets labels from list of group nodes (gets them from list of all nodes)
@@ -143,6 +156,7 @@ def get_group_nodes_data(flattened_nodes: list) -> [str]:
     """
 
     group_nodes = list(filter(lambda x: is_node_group(x), flattened_nodes))
+    group_nodes.extend(get_sub_groups(group_nodes))
     group_nodes = [x['y:ProxyAutoBoundsNode']['y:Realizers'] for x in group_nodes]
     group_nodes = flatten(group_nodes, 'y:GroupNode')
     group_nodes = flatten(group_nodes, 'y:NodeLabel')
@@ -159,7 +173,7 @@ def clean_list(labels: list) -> [str]:
     """
     res = []
     for label in labels:
-        if label and not label in res and label != 'entry' and label != 'exit':
+        if label and label not in res and label != 'entry' and label != 'exit':
             res.append(label)
     return res
 
@@ -205,7 +219,7 @@ def get_keystrokes(text_labels: list) -> str:
 
 
 def main():
-    filename = 'dogan.graphml'
+    filename = 'lightsaber.graphml'
     data = xmltodict.parse(open(filename).read())
 
     all_labels = get_edge_labels(data['graphml']['graph']['edge'])
@@ -218,7 +232,6 @@ def main():
     all_labels = clean_list(all_labels)
     enum = get_enum(all_labels)
     keystrokes = get_keystrokes(all_labels)
-
 
     res = open(filename + '_res.txt', "w")
     res.write(enum)
