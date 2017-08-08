@@ -215,7 +215,7 @@ def get_keystrokes(text_labels: list) -> str:
     """
     new_labels = ['{' + label + '_SIG, ' +'\"' + label + '\", \'\'}'  for label in text_labels]
     keystrokes = ',\n'.join(new_labels)
-    return 'const KeyStroke KeyStrokes[]={\n' + keystrokes + '\n\n{ TERMINATE_SIG, "TERMINATE", 0x1B }\n\n}'
+    return 'const KeyStroke KeyStrokes[]={\n' + keystrokes + ',\n\n{ TERMINATE_SIG, "TERMINATE", 0x1B }\n\n}'
 
 
 def main():
