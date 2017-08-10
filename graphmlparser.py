@@ -1,4 +1,4 @@
-import xmltodict
+import xmltodict, os
 
 def flatten(mixed_data: list, key: str) -> list:
     """
@@ -12,12 +12,13 @@ def flatten(mixed_data: list, key: str) -> list:
     """
     flattened_data = []
     for node in mixed_data:
-        node_data = node[key]
-        if isinstance(node_data, dict):
-            flattened_data.append(node_data)
-        else:
-            for e in node_data:
-                flattened_data.append(e)
+        if isinstance(node, dict) and key in node.keys():
+            node_data = node[key]
+            if isinstance(node_data, dict):
+                flattened_data.append(node_data)
+            else:
+                for e in node_data:
+                    flattened_data.append(e)
     return flattened_data
 
 def is_edge_correct(edge: dict, type: str) -> bool:
@@ -36,7 +37,8 @@ def is_edge_correct(edge: dict, type: str) -> bool:
 def edge_label_cleaner(label: str) -> str:
     """
     cleans edge_label of signal from extra data
-    Removes extra spases, comments(symbols after \), conditions (symbols after [), actions (symbols after /)
+    Removes extra spases, comments(symbols after \), conditions (symbols after [), actions (symbols after /,
+    parameters(symbols after"(")
     Examples:
         >>> label_cleaner("NEUTRALIZE")
         "NEUTRALIZE"
@@ -46,10 +48,12 @@ def edge_label_cleaner(label: str) -> str:
         ""
         >>> label_cleaner("SIGNAL [flag == 1]")
         "SIGNAL"
+        >>> label_cleaner("GOT_REASON(id))"
+        "GOT_REASON"
         :param label:
         :return: string
         """
-    dividers = "[/\\"
+    dividers = "([/\\"
     for divider in dividers:
         label = label.split(divider)[0]
     return label.strip()
@@ -118,6 +122,7 @@ def clean_node_label(label: str) -> [str]:
     """
     events = label.split('/')
     events = [s.split('\n')[-1].strip() for s in events]
+    events = [s.split('(')[0].strip() for s in events]
     return events[:-1]
 
 def get_simple_nodes_data(flattened_nodes: [dict]) -> [str]:
@@ -179,66 +184,67 @@ def clean_list(labels: list) -> [str]:
 
 def get_enum(text_labels: list) -> str:
     """
-    gets enum structure for c language from list of sygnals
-    adds _SYG to each sygnal and adds special text in the end and beginning of the text)
-    Example:
+    prepares list of signals for enum structure for c language: joins them into one string comma and \n-separated
+    and adds _SIG to each signal
+     Example:
         >>> get_enum(["EVENT1", "EVENT2"])
-        "enum PlayerSignals {
-            TICK_SEC_SIG = Q_USER_SIG,
-
-            EVENT1_SIG,
-            EVENT2_SIG
-
-        LAST_USER_SIG
-        };"
+        "EVENT1_SIG,
+         EVENT2_SIG"
     :param text_labels:
     :return: string
     """
     enum_labels = [label + '_SIG' for label in text_labels]
     enum = ',\n'.join(enum_labels)
-    enum = 'enum PlayerSignals {\nTICK_SEC_SIG = Q_USER_SIG,\n\n' + enum + ',\n\nLAST_USER_SIG\n};'
     return enum
 
 def get_keystrokes(text_labels: list) -> str:
     """
-    gets enum structure for c language from list of sygnals
+    prepares list ofsygnals to special structure for c language
     Example:
         >>> get_keystrokes(["EVENT1", "EVENT2"])
-        "const KeyStroke KeyStrokes[]= {
-        {EVENT1_SIG, "EVENT1", ""},
-        {EVENT2_SIG, "EVENT2", ""},
-
-        { TERMINATE_SIG, "TERMINATE", 0x1B }
-        };"
+        "EVENT1_SIG, "EVENT1", ""},
+        {EVENT2_SIG, "EVENT2", ""}"
     :param text_labels:
     :return: string
     """
-    new_labels = ['{' + label + '_SIG, ' +'\"' + label + '\", \'\'}'  for label in text_labels]
+    tab = 4
+    max_len = max([len(x) for x in text_labels])
+    new_labels = ['{' + ' '*tab + label + '_SIG,' + ' '*(tab+max_len-len(label)) + '\"' + label + '\",' + ' '*(tab+max_len-len(label)) + '\'\'' + ' '*tab + '}'  for label in text_labels]
     keystrokes = ',\n'.join(new_labels)
-    return 'const KeyStroke KeyStrokes[]={\n' + keystrokes + ',\n\n{ TERMINATE_SIG, "TERMINATE", 0x1B }\n\n}'
+    return keystrokes
 
-
-def main():
-    filename = 'lightsaber.graphml'
+def get_sygnals(filename: str, res_enum, res_strokes):
+    """
+    gets all sygnal (events) labels from graphml file and writes them as enum and keystrokes data to special files
+    :param filename: name of data file with graphml structure
+    :param res_enum: file for enum
+    :param res_strokes: file for keystroke
+    """
     data = xmltodict.parse(open(filename).read())
-
     all_labels = get_edge_labels(data['graphml']['graph']['edge'])
-
     nodes = data['graphml']['graph']['node']
     flattened_nodes = flatten(nodes, 'data')
     flattened_nodes.extend(get_sub_nodes(nodes))
     all_labels.extend(get_simple_nodes_data(flattened_nodes))
     all_labels.extend(get_group_nodes_data(flattened_nodes))
     all_labels = clean_list(all_labels)
-    enum = get_enum(all_labels)
-    keystrokes = get_keystrokes(all_labels)
+    res_enum.write(get_enum(all_labels)+',\n\n')
+    res_strokes.write(get_keystrokes(all_labels)+',\n\n')
 
-    res = open(filename + '_res.txt', "w")
-    res.write(enum)
-    res.write('\n\n')
-    res.write(keystrokes)
-    res.write('\n\n')
-    res.close()
+def main():
+    res_enum = open('enum_res.txt', 'w')
+    res_enum.write('enum PlayerSignals {\nTICK_SEC_SIG = Q_USER_SIG,\n\n')
+    res_strokes = open('strokes_res.txt', "w")
+    res_strokes.write('const KeyStroke KeyStrokes[]={\n')
+    filenames = os.listdir()
+    all_labels = []
+    filenames = list(filter(lambda x: x.endswith(".graphml"), filenames))
+    for filename in filenames:
+        get_sygnals(filename, res_enum, res_strokes)
+    res_enum.write('\n\nLAST_USER_SIG\n};')
+    res_enum.close()
+    res_strokes.write('\n\n{ TERMINATE_SIG, "TERMINATE", 0x1B }\n\n}')
+    res_strokes.close()
 
 
 if __name__ == '__main__':

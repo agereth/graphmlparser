@@ -1,0 +1,60 @@
+const KeyStroke KeyStrokes[]={
+{    NEUTRALIZE_SIG,           "NEUTRALIZE",           ''    },
+{    GET_CRIMSON_SIG,          "GET_CRIMSON",          ''    },
+{    GET_WHITE_SIG,            "GET_WHITE",            ''    },
+{    ROSE_INFLUENCE_SIG,       "ROSE_INFLUENCE",       ''    },
+{    CRIMSON_INFLUENCE_SIG,    "CRIMSON_INFLUENCE",    ''    },
+{    WHITE_CALLING_SIG,        "WHITE_CALLING",        ''    },
+{    CRIMSON_SERVANT_SIG,      "CRIMSON_SERVANT",      ''    },
+{    EMOTION_SIG,              "EMOTION",              ''    },
+{    CRIMSON_BROADCAST_SIG,    "CRIMSON_BROADCAST",    ''    },
+
+{    GOT_REASON_SIG,      "GOT_REASON",      ''    },
+{    REASON_ENDED_SIG,    "REASON_ENDED",    ''    },
+{    TRACK_ENDED_SIG,     "TRACK_ENDED",     ''    },
+
+{    A_SIG,          "A",          ''    },
+{    B_SIG,          "B",          ''    },
+{    D_SIG,          "D",          ''    },
+{    F_SIG,          "F",          ''    },
+{    G_SIG,          "G",          ''    },
+{    TRIGGER_SIG,    "TRIGGER",    ''    },
+{    BORDER_SIG,     "BORDER",     ''    },
+{    TRIGGE_SIG,     "TRIGGE",     ''    },
+
+{    START_PULSE_SIG,      "START_PULSE",      ''    },
+{    END_PULSE_SIG,        "END_PULSE",        ''    },
+{    ERROR_HANDLED_SIG,    "ERROR_HANDLED",    ''    },
+{    READY_SIG,            "READY",            ''    },
+
+{    PERSON_NEAR_SIG,        "PERSON_NEAR",        ''    },
+{    LOSE_CONNECTION_SIG,    "LOSE_CONNECTION",    ''    },
+{    FEEL_KATET_SIG,         "FEEL_KATET",         ''    },
+
+{    BUTTON1_PRESSED_FOR_THREE_SECONDS_SIG,    "BUTTON1_PRESSED_FOR_THREE_SECONDS",    ''    },
+{    BUTTON1_PRESSED_SIG,                      "BUTTON1_PRESSED",                      ''    },
+{    SWING_SIG,                                "SWING",                                ''    },
+{    STOP_SIG,                                 "STOP",                                 ''    },
+{    SPIN_SIG,                                 "SPIN",                                 ''    },
+{    BUTTON2_PRESSED_SIG,                      "BUTTON2_PRESSED",                      ''    },
+{    CONNECTED_TO_PC_SIG,                      "CONNECTED_TO_PC",                      ''    },
+{    LOW_POWER_SIG,                            "LOW_POWER",                            ''    },
+{    OK_POWER_SIG,                             "OK_POWER",                             ''    },
+{    BUTTON2_PRESSED_FOR_THREE_SECOND_SIG,     "BUTTON2_PRESSED_FOR_THREE_SECOND",     ''    },
+{    BOTH_BUTTONS_PRESSED_SIG,                 "BOTH_BUTTONS_PRESSED",                 ''    },
+{    CLASH_SIG,                                "CLASH",                                ''    },
+{    STAB_SIG,                                 "STAB",                                 ''    },
+
+{    DOOR_ACTIVATED_SIG,    "DOOR_ACTIVATED",    ''    },
+{    DOOR_LEFT_SIG,         "DOOR_LEFT",         ''    },
+
+{    GOT_REASON_SIG,    "GOT_REASON",    ''    },
+
+{    REASON_GOT_SIG,      "REASON_GOT",      ''    },
+{    TIME_TICK_1S_SIG,    "TIME_TICK_1S",    ''    },
+
+
+
+{ TERMINATE_SIG, "TERMINATE", 0x1B }
+
+}
